@@ -1,0 +1,119 @@
+import pygame
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Set up display
+width, height = 1200, 650
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Simple Drawing App")
+
+# Colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+YELLOW = (255, 255, 0)
+ORANGE = (255, 165, 0)
+PURPLE = (128, 0, 128)
+PINK = (255, 192, 203)
+CYAN = (0, 255, 255)
+
+# Color palette
+color_palette = [BLACK, WHITE, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, PINK, CYAN]
+current_color_index = 0
+
+# Brush settings
+brush_size = 5
+brush_color = color_palette[current_color_index]
+eraser_color = WHITE  # White eraser
+drawing_mode = True
+
+# Variables for drawing, brush size adjustment, erasing, and color selection
+drawing = False
+last_pos = None
+brush_min_size = 1
+brush_max_size = 20
+
+# Fill the screen with white
+screen.fill(WHITE)
+
+# Color picker settings
+color_picker_width = 50
+color_picker_height = height
+color_picker_rects = []
+
+# Create color picker rectangles
+for i, color in enumerate(color_palette):
+    rect = pygame.Rect(width - color_picker_width, i * (color_picker_height // len(color_palette)),
+                       color_picker_width, color_picker_height // len(color_palette))
+    color_picker_rects.append(rect)
+
+# Font settings
+font = pygame.font.Font(None, 36)
+
+# Main loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            drawing = True
+            last_pos = event.pos
+            # Check if the color picker is clicked
+            for i, rect in enumerate(color_picker_rects):
+                if rect.collidepoint(event.pos):
+                    current_color_index = i
+                    brush_color = color_palette[current_color_index]
+        elif event.type == pygame.MOUSEBUTTONUP:
+            drawing = False
+            last_pos = None
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                brush_size = min(brush_size + 1, brush_max_size)
+            elif event.key == pygame.K_DOWN:
+                brush_size = max(brush_size - 1, brush_min_size)
+            elif event.key == pygame.K_e:
+                drawing_mode = not drawing_mode
+            elif event.key in [pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5,
+                               pygame.K_6, pygame.K_7, pygame.K_8, pygame.K_9]:
+                index = int(event.unicode) - 1
+                if 0 <= index < len(color_palette):
+                    current_color_index = index
+                    brush_color = color_palette[current_color_index]
+            elif event.key == pygame.K_0:  # Handling the '0' key separately
+                index = 9
+                current_color_index = index
+                brush_color = color_palette[current_color_index]
+
+    # Draw or erase on the screen
+    if drawing:
+        pos = pygame.mouse.get_pos()
+        if last_pos:
+            if drawing_mode:
+                pygame.draw.line(screen, brush_color, last_pos, pos, brush_size)
+            else:
+                pygame.draw.line(screen, eraser_color, last_pos, pos, brush_size)
+            last_pos = pos
+
+    # Draw color picker rectangles
+    for i, rect in enumerate(color_picker_rects):
+        pygame.draw.rect(screen, color_palette[i], rect)
+
+    # Fill background and display brush size text
+    background_rect = pygame.Rect(0, 0, 200, 50)
+    pygame.draw.rect(screen, WHITE, background_rect)
+    brush_size_text = font.render(f"Brush Size: {brush_size}", True, BLACK)
+    screen.blit(brush_size_text, (10, 10))
+
+    # Update the display
+    pygame.display.update()
+
+    # Limit the frame rate
+    pygame.time.Clock().tick(60)
+
+# Clean up
+pygame.quit()
