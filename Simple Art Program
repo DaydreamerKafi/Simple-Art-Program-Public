@@ -35,7 +35,7 @@ drawing_mode = True
 drawing = False
 last_pos = None
 brush_min_size = 1
-brush_max_size = 20
+brush_max_size = 100
 
 # Fill the screen with white
 screen.fill(WHITE)
